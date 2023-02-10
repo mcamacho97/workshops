@@ -1,0 +1,45 @@
+from Crypto.PublicKey import RSA
+from Crypto.Cipher import PKCS1_v1_5
+from Crypto.Random import get_random_bytes
+import base64
+
+def decryption(arg_privatekey, arg_b64text):
+    sentinel = get_random_bytes(256)
+    decoded_data = base64.b64decode(arg_b64text)
+    decryptor = PKCS1_v1_5.new(arg_privatekey)
+    decrypted = decryptor.decrypt(decoded_data, sentinel)
+    return decrypted
+
+ciphertext = b'Dvwo7rmPNFmpp3L0V+LS3nPdZwc8f97LyZa5jYOTHz23fSMAtv2JFSsgmrEa6o40jThDhNL+mCtT3gpJ89+lHp4KYwLjMTVaCY3cHWOWhyc0JdOoHFSxq/vx+ODO2wwVLICi4/IOSbOKI99c3x1OFXJfMRKCnu/vlUgo9djBOXKSRh2I/j0LMy1Xo3IlMZGYXkPvQ90Jpn8NTgNZvPu9MsKNbxY3iXCAvIpCxeIDQbshkGv7pzeSkO7oBDZTPHyn0f6LuCMKpZ9vOxvO0LhgACLIq2Bzv0BCAKiXWlPIBa/eiayjn3F/5NG/JZGE8tHmnS4cirmNG19CCIbHNIzbmA=='
+
+key_example = """-----BEGIN RSA PRIVATE KEY-----
+MIIEoQIBAAKCAQB5c8RYWpgna0HKxnrH4TwPlfQGluZtPgJpNLF/3g5RyEa8H0Qs
+gsvVqtG47Ewcss14S5LloQLrK3g0yfm5IkWDHoDvBp2rareEMzEZN2eb3z1cSapU
+j9LtfKu2f8oKxJNeMe1XfersYUkL8FtCzCoRDs3OOlRybnZ5vd07+isaqvW+BRWg
+H0dZzu9IeZmp2cgOHbZGI20O1BJBCRoIkkatEY7UI9dpvjI7J8jf+a3F2BHLuWj1
+28D7v6HB9tqxZMFhcILLigcM4CcQtVJvp1BIqF4Nd5gZx4wPgtKgh/oDexpjwPnB
+VofXBY4oA29jgiQOBC6nowUqqz+U+yZicV+lAgMBAAECggEAcZTsqNyAs0zBiMu6
+A7gGnWTVhFwXP07gnlcjMLwQlDdCv6hV73KbAkXwQIrsW2J0ee3jgVDlE93hWy0Q
+mC0O6SLb3a5IQglZew8M+dIw2TsbfXV/D/o5ftQ7Gj/ESfGxCESU/F/MFiidUccE
+8iFRrgY0PouacjIQJqaDghXhvduaPyts9/mUhvdsGZQ3GT/wWXbk5wRX6fMxWeqI
+n+MMS9H5wAQbv4P496liOCxYQMQGR3cpQp/ydQ39g4g2yZVMuRHRN7fWjgPy6qr9
+TB7CAs6f1O3es1Cg1vv/zzyH/z/6BumWoSkmqxO9t1gQDTDteu0U+jvwPt4vS0V7
+fSemOQKBgQDPL6Qs8lEdW0YnNoUFn+crfyMcnkWJ1GJGTDoFVS+IZvRAescDgooa
+gJdpJp+4l3eQJxOvCXmEsfTfZ33/iuy2cveYfXk4z4Agn7aoRb4FG/lNKCUtebnv
+75JdlSi2yZicfheocsGbzldeEbtvbLT5gymr3bjBzN6XE7Bqk59r0wKBgQCWER2i
+wJt2khP7zPPIJtJ8G1VC/pkqe//9CcTWQT3ixqs6taFQBj9Cdakzooj2XwC8I1nH
+jJhHlAvkDelLwEK8fQ0vMziAW8n2l39cxSghPZsZEU45d4gzPs2Ews9qI4FVJNed
+qk577QlGCT3z7fFAYTDwYDQEJn73xp3EOc0zpwKBgArb+WPts3ixbwThI6m+ztQF
+zuZSGVz3B8uddTEQXPRuSQEULlgtwGVRNh5pytdXAQpKMgrrmTXuSeJnvz/knTGW
+5wlUEkV7AsEy/dTmCuajp7Z2kzRF/AvqZ6aGCeNCv7/8D+thUGqFLykcDtHxRa8K
+Q+XhMizeOxB6FLYRVLrHAoGASLLv/Xl7lvx7i9+lNhCApbkEHBmFEAzUXbxOzFD8
+7xC5wQ5eoIr2OHcRyj7yRRCPJZWml8Jnvz1caVXH8HeqnO+j5HrW43AULk8EV2f3
+4eqbaZB1qedbZyAEpk1N+ChNLndTsUDhFq4lcPVnOvXJixvKfpjMejpABj8FDRvH
+aj8CgYB721ZTxf0xffSrmljlrA5yeVklu5rZSdNsGrk42OtznvfuhHlO9hW4BLpQ
+EDvPY+XXjgEDb3gHmhWJXvJvea76fvsuiJ1aFksivauZ7n8VMd7+zvEqjRuEk4ef
++bSpVWXj8n3T0HxkOIoyEDsH9oI7pI2Ylqhgvs2LGlXcIR6A1Q==
+-----END RSA PRIVATE KEY-----"""
+privatekey  = RSA.importKey(key_example)
+#privatekey = RSA.importKey(open('jotform_lafise.key').read())
+cleartext = decryption(privatekey, ciphertext)
+print(cleartext.decode('UTF-8'))

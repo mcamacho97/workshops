@@ -1,0 +1,51 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Servired Back Office
+Parameters:
+  ServiredBackOfficeHostingBucketName:
+    Type: String
+    Default: servired-back-office-hosting-dev
+    Description: Servired Back Office S3 Hosting Bucket
+  ServiredBackOfficeUserPoolName:
+    Type: String
+    Default: servired-back-office-user-pool
+    Description: Servired Back Office User Pool
+
+Resources:
+  ServiredBackOfficeUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties: 
+      UserPoolName: !Ref ServiredBackOfficeUserPoolName
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireLowercase: false
+          RequireNumbers: false
+          RequireSymbols: false
+          RequireUppercase: false
+      UsernameAttributes: 
+        - email
+      UsernameConfiguration:
+        CaseSensitive: false      
+      AutoVerifiedAttributes:
+        - email
+      Schema:
+        - Name: email
+          AttributeDataType: String
+          Mutable: true
+          Required: true
+
+  ServiredBackOfficeUserPoolWebClientId:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: web-client-id
+      GenerateSecret: false
+      UserPoolId: !Ref ServiredBackOfficeUserPool
+      RefreshTokenValidity: 30
+      AccessTokenValidity: 1
+      IdTokenValidity: 1
+      EnableTokenRevocation: True
+      ExplicitAuthFlows:
+        - ALLOW_CUSTOM_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+        - ALLOW_USER_SRP_AUTH

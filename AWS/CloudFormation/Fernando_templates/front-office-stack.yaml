@@ -1,0 +1,51 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Servired Front Office
+Parameters:
+  ServiredFrontOfficeHostingBucketName:
+    Type: String
+    Default: servired-front-office-hosting-dev
+    Description: Servired Front Office S3 Hosting Bucket
+  ServiredFrontOfficeUserPoolName:
+    Type: String
+    Default: servired-front-office-user-pool
+    Description: Servired Front Office User Pool
+  PasswordPolicyMinLength:
+    Type: Number
+    Default: 8
+    Description: Cognito User Pool Password Min Length
+
+Resources:
+  ServiredFrontOfficeUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties: 
+      UserPoolName: !Ref ServiredFrontOfficeUserPoolName
+      Policies:
+        PasswordPolicy:
+          MinimumLength: !Ref PasswordPolicyMinLength
+          RequireLowercase: false
+          RequireNumbers: false
+          RequireSymbols: false
+          RequireUppercase: true
+      MfaConfiguration: 'ON'
+      EnabledMfas:
+        - SOFTWARE_TOKEN_MFA
+      UsernameConfiguration:
+        CaseSensitive: false
+      AutoVerifiedAttributes:
+        - email
+
+  ServiredFrontOfficeUserPoolWebClientId:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: web-client-id
+      GenerateSecret: false
+      UserPoolId: !Ref ServiredFrontOfficeUserPool
+      RefreshTokenValidity: 30
+      AccessTokenValidity: 1
+      IdTokenValidity: 1
+      EnableTokenRevocation: True
+      ExplicitAuthFlows:
+        - ALLOW_CUSTOM_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+        - ALLOW_USER_SRP_AUTH

@@ -1,0 +1,296 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Extract data from Jotform in a JSON file
+Parameters:
+  JotformCredentialsSecretName:
+    Type: String
+    Default: prod/apikey/Jotform
+    Description: Jotform API Key
+  AuthorizerSecretName:
+    Type: String
+    Default: prod/apikey/Authorizer
+    Description: Authorizer API Key
+  JotformDataBucketName:
+    Type: String
+    Default: jotform-s3-bucket-data
+    Description: Jotform extracted data private Bucket
+  ApiKeyRequired:
+    Type: String
+    Default: true
+    Description: Includes API key to the API
+
+Resources:
+  JotformCredentialsSecret:
+    Type: 'AWS::SecretsManager::Secret'
+    Properties:
+      Name: !Ref JotformCredentialsSecretName
+      Description: Api Key from Jotform
+      SecretString: '{"api_key":"0d2e5f8a2000af450b696e182bff8e74"}'
+  
+  AuthorizerSecret:
+    Type: 'AWS::SecretsManager::Secret'
+    Properties:
+      Name: !Ref AuthorizerSecretName
+      Description: Api Key from Authorizer API
+      SecretString: '{"api_key":"DBn7NPl5NM227GkMcn94J9gquD3yojae4NbJ9hd9"}'
+  
+  JotformDataBucket:
+    Type: 'AWS::S3::Bucket'
+    DeletionPolicy: Retain
+    Properties:
+      BucketName: !Ref JotformDataBucketName
+  
+  ExtractDataFromJotformRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: BLRoleForLambdaExtractDataFromJotform
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Path: /
+
+  ExtractDataFromJotformPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: BLPolicyForLambdaExtractDataFromJotform
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Action:
+          - secretsmanager:GetSecretValue
+          Resource: 
+            - !Ref JotformCredentialsSecret
+          Effect: Allow
+        - Action:
+          - s3:PutObject
+          Resource: 
+            - !Sub arn:aws:s3:::${JotformDataBucket}/*
+          Effect: Allow
+      Roles:
+        - !Ref ExtractDataFromJotformRole
+
+  AuthorizerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: BLRoleForLambdaAuthorizer
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Path: /
+
+  AuthorizerPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: BLPolicyForLambdaAuthorizer
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Action:
+            - secretsmanager:GetSecretValue
+            Resource: 
+              - !Ref AuthorizerSecretName
+            Effect: Allow
+      Roles:
+        - !Ref AuthorizerRole
+
+  ApiKey:
+    Type: AWS::ApiGateway::ApiKey
+    Properties:
+      Name: ExtractDataFromJotformAPIKey
+      Description: CloudFormation API Key for ExtractDataFromJotform Lambda V1
+      Enabled: true
+      StageKeys:
+        - RestApiId: !Ref CustomWebToCaseApiGateway
+          StageName: Prod 
+
+  CustomWebToCaseApiGateway:
+    Type: AWS::Serverless::Api
+    Properties: 
+      Name: CustomWebToCaseApiGateway
+      Cors:
+        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+        AllowMethods: "'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT'"
+        AllowOrigin: "'*'"     
+      Auth:
+        ApiKeyRequired: !Ref ApiKeyRequired
+        ResourcePolicy:
+          CustomStatements:
+          - Effect: Allow
+            Principal: "*"
+            Action: execute-api:Invoke
+            Resource: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*
+        DefaultAuthorizer: LambdaRequestAuthorizer
+        Authorizers:
+          LambdaRequestAuthorizer:
+            FunctionPayloadType: REQUEST
+            FunctionArn: !GetAtt AuthorizerFunction.Arn
+            Identity:
+              QueryStrings:
+                - apikey
+      EndpointConfiguration: Regional
+      StageName: Prod
+
+  ExtractDataFromJotformToS3Function:
+    Type: AWS::Serverless::Function   
+    Properties:
+      FunctionName: ExtractDataFromJotformToS3Function
+      Description: Extract data from jotform to a bucket S3
+      Handler: lambda_handler
+      Runtime: python3.9
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /api/nps/jotforms
+            Method: post
+            RestApiId: !Ref CustomWebToCaseApiGateway
+      MemorySize: 128
+      Timeout: 30
+      Role: !GetAtt ExtractDataFromJotformRole.Arn
+      Environment:
+        Variables: 
+          BUCKET_NAME	: !Ref JotformDataBucketName
+          REGION: !Ref "AWS::Region" 
+          SECRET_NAME: !Ref JotformCredentialsSecretName
+      InlineCode: |
+        import json
+        import requests
+        import os
+        import boto3
+        from botocore.exceptions import ClientError
+        import logging
+
+        # Declaring and initialzing variables
+        s3_client = boto3.client('s3')
+        secrets_client = boto3.client('secretsmanager')
+        logger = logging.getLogger(__name__)
+        logger.setLevel(logging.INFO)
+
+        # Environment variables
+        secret_name = os.environ['SECRET_NAME']
+        region_name = os.environ['REGION']
+        bucket_name = os.environ['BUCKET_NAME']
+
+        def get_secret_string():
+            try:
+                secret = secrets_client.get_secret_value(SecretId=secret_name)
+            except ClientError as e:
+                logger.info(e)
+                return f"{secret_name} secret can not be obtained: \n{e}"
+            
+            credentials = secret['SecretString']
+            json_credentials = json.loads(credentials)
+            api_key_jotform =json_credentials["api_key"]
+            logger.info(api_key_jotform)
+            return api_key_jotform
+            
+        def extract_jotform_json(submission_id):
+            try:
+                request_api_jotform = requests.get(f"https://api.jotform.com/submission/{submission_id}?apiKey={get_secret_string()}")
+                logger.info(request_api_jotform)
+                data = json.loads(request_api_jotform.content.decode('utf-8'))["content"]["answers"]
+                data_items = data.items()
+            except ClientError as e:
+                logger.info(e)
+                return f"{submission_id} is not a valid submissionID: \n{e}"
+            key_list = []
+            value_list = []
+            for item in data_items:
+                if "answer" in item[1]:
+                    key_list.append(item[1]["name"])
+                    value_list.append(item[1]["answer"])
+                else:
+                    key_list.append(item[1]["name"])
+                    value_list.append(None)
+
+            JSON_formatted_data = dict(zip(key_list, value_list))
+            return JSON_formatted_data
+
+        def lambda_handler(event, context):
+            logger.info(f"Data In: {json.dumps(event)}")
+            logger.info(event)
+            form_data = event['body']
+            form_data_index_string = form_data.find("submissionID") + 17
+            submissionId = int(form_data[form_data_index_string:form_data_index_string + 19])
+            data = extract_jotform_json(submissionId)
+            data_json = json.dumps(data, indent=4, sort_keys=True)
+            logger.info(data_json)
+            s3_client.put_object(Body=str(data_json), Bucket=bucket_name, Key=f'jotform_data_{submissionId}.json')
+
+            return {
+                'statusCode': 200,
+                'body': 'OK'
+            }
+
+  AuthorizerFunction:
+    Type: AWS::Serverless::Function   
+    Properties:
+      FunctionName: AuthorizerFunction
+      Description: Authorizer lambda function for API Gateway
+      Handler: lambda_handler
+      Runtime: python3.9
+      MemorySize: 128
+      Timeout: 30
+      Role: !GetAtt AuthorizerRole.Arn
+      Environment:
+        Variables:
+          API_RESOURCE: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${CustomWebToCaseApiGateway}/api/nps/jotforms
+          SECRET_NAME: !Ref JotformCredentialsSecretName
+      InlineCode: |
+        import json
+        import os
+        import boto3
+        from botocore.exceptions import ClientError
+        import logging
+
+        # Declaring and initialzing variables
+        secrets_client = boto3.client('secretsmanager')
+        logger = logging.getLogger(__name__)
+        logger.setLevel(logging.INFO)
+
+        # Environment variables
+        secret_name = os.environ['SECRET_NAME']
+        api_resource_arn = os.environ['API_RESOURCE']
+
+        def get_secret_string():
+            try:
+                secret = secrets_client.get_secret_value(SecretId=secret_name)
+            except ClientError as e:
+                logger.info(e)
+                return f"{secret_name} secret can not be obtained: \n{e}"
+            
+            credentials = secret['SecretString']
+            json_credentials = json.loads(credentials)
+            api_key_jotform =json_credentials["api_key"]
+            logger.info(api_key_jotform)
+            return api_key_jotform
+
+        def lambda_handler(event, context):
+            api_key = get_secret_string()
+            #1 - See if the person's apikey is valid
+            if event['queryStringParameters']['apikey'] == api_key:
+                auth = 'Allow'
+            else:
+                auth = 'Deny'
+            
+            #2 - Construct and return the response
+            authResponse = { "principalId": "001", "policyDocument": { "Version": "2012-10-17", "Statement": [{"Action": "execute-api:Invoke", "Resource": [api_resource_arn], "Effect": auth}] }}
+            return authResponse
+
+

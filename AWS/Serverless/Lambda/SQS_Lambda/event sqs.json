@@ -1,0 +1,40 @@
+{
+    "Records": [
+        {
+            "messageId": "449d0760-2e08-4abc-b7f3-fd1b63d396b8",
+            "receiptHandle": "AQEBbUam4XEdcbz2faZO TfkFQhKYRFGoXnV12t9B2e86W47j/ Fh0dDcZcH4ZuVAcSv6nFL/e63A0Pr9t 0idw9MDstWBqmX E9texnkFwMDM6IdTua94sqxHoqddV22y9giCX6 t7lRzMHX44EOvKhlpSd8WaXlYa0RUKNTTe0b/39NUS/aGsfkZnXeORf2KBlTY9iiCOaxC3iJ7wB9miJS6LD6Ij09oTRbwwL4fq4/1pShxaT5W4NgisVubMbQC1GjCJRvizeExxML421LOB3fckANUpYCJE8ALdCjl2yyCb6lvhKtdonl H5pUgND9ehXILskodj g4iZo1ZDj9bSfzjFpHpB7qOyeEeiehByk1kTmRGV0saGej4KYZkuTfZBVTJIlIE8nwjV/TBM2KW1w==",
+            "body": "Esto es una prueba para enviar data de un lambda a otro ",
+            "attributes": {
+                "ApproximateReceiveCount": "10",
+                "SentTimestamp": "1632847979428",
+                "SenderId": "AROAZXZ7P4EWDVT2G2D3C:sendMessageLambda",
+                "ApproximateFirstReceiveTimestamp": "1632847979428",
+            },
+            "messageAttributes": {
+                "WeeksOn": {
+                    "stringValue": "10",
+                    "stringListValues": [],
+                    "binaryListValues": [],
+                    "dataType": "Number",
+                },
+                "Author": {
+                    "stringValue": "Mauricio Camacho",
+                    "stringListValues": [],
+                    "binaryListValues": [],
+                    "dataType": "String",
+                },
+                "Title": {
+                    "stringValue": "Pruebas de enviar data",
+                    "stringListValues": [],
+                    "binaryListValues": [],
+                    "dataType": "String",
+                },
+            },
+            "md5OfMessageAttributes": "e3dc7ce8b1498293f44b09096af0d066",
+            "md5OfBody": "6505318aa29970e8b18a3324509b1dcd",
+            "eventSource": "aws:sqs",
+            "eventSourceARN": "arn:aws:sqs:us-east-1:669611188524:sendDataSQS",
+            "awsRegion": "us-east-1",
+        }
+    ]
+}

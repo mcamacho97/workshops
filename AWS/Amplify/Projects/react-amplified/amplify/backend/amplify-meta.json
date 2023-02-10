@@ -1,0 +1,83 @@
+{
+  "providers": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-reactamplified-dev-152854-authRole",
+      "UnauthRoleArn": "arn:aws:iam::809489680864:role/amplify-reactamplified-dev-152854-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::809489680864:role/amplify-reactamplified-dev-152854-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-reactamplified-dev-152854-deployment",
+      "UnauthRoleName": "amplify-reactamplified-dev-152854-unauthRole",
+      "StackName": "amplify-reactamplified-dev-152854",
+      "StackId": "arn:aws:cloudformation:us-east-1:809489680864:stack/amplify-reactamplified-dev-152854/f2d33530-96ad-11ed-ab3a-0aca7a541685",
+      "AmplifyAppId": "dugdlqa66y1lq"
+    }
+  },
+  "api": {
+    "reactamplified": {
+      "service": "AppSync",
+      "providerPlugin": "awscloudformation",
+      "dependsOn": [],
+      "output": {
+        "authConfig": {
+          "defaultAuthentication": {
+            "authenticationType": "API_KEY",
+            "apiKeyConfig": {
+              "apiKeyExpirationDays": 7
+            }
+          },
+          "additionalAuthenticationProviders": []
+        },
+        "GraphQLAPIIdOutput": "ej6rpybl4bflzfk7lups3mqkzq",
+        "GraphQLAPIEndpointOutput": "https://l73fq5emjngqngu2wrfcyrpywq.appsync-api.us-east-1.amazonaws.com/graphql",
+        "GraphQLAPIKeyOutput": "da2-dontmzzqhnbezhc7j23utcjdfi"
+      },
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-reactamplified-dev-152854-deployment/amplify-cfn-templates/api/cloudformation-template.json",
+        "logicalId": "apireactamplified"
+      },
+      "lastPushTimeStamp": "2023-01-17T21:57:24.994Z",
+      "lastPushDirHash": "MnFKmf1JgTP/UosbctACSdH2Dug="
+    }
+  },
+  "auth": {
+    "reactamplified3b75e74b": {
+      "service": "Cognito",
+      "providerPlugin": "awscloudformation",
+      "dependsOn": [],
+      "customAuth": false,
+      "frontendAuthConfig": {
+        "socialProviders": [],
+        "usernameAttributes": [],
+        "signupAttributes": [
+          "EMAIL"
+        ],
+        "passwordProtectionSettings": {
+          "passwordPolicyMinLength": 8,
+          "passwordPolicyCharacters": []
+        },
+        "mfaConfiguration": "OFF",
+        "mfaTypes": [
+          "SMS"
+        ],
+        "verificationMechanisms": [
+          "EMAIL"
+        ]
+      },
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-reactamplified-dev-152854-deployment/amplify-cfn-templates/auth/reactamplified3b75e74b-cloudformation-template.json",
+        "logicalId": "authreactamplified3b75e74b"
+      },
+      "lastPushTimeStamp": "2023-01-17T21:57:25.440Z",
+      "output": {
+        "UserPoolId": "us-east-1_xZlc81o3H",
+        "AppClientIDWeb": "ku8vq4bsbcroc7ol0he0hi9n6",
+        "AppClientID": "3nm6vrg80b5vfu2nsnadqkgvkg",
+        "IdentityPoolId": "us-east-1:2acef81a-d7e6-4b31-990c-d882d3a83f29",
+        "UserPoolArn": "arn:aws:cognito-idp:us-east-1:809489680864:userpool/us-east-1_xZlc81o3H",
+        "IdentityPoolName": "reactamplified3b75e74b_identitypool_3b75e74b__dev",
+        "UserPoolName": "reactamplified3b75e74b_userpool_3b75e74b"
+      },
+      "lastPushDirHash": "H4rub2Avb30kabxDOFy9LCRo/C8="
+    }
+  }
+}

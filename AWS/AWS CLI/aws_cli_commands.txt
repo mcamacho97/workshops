@@ -1,0 +1,6 @@
+###Para crear diferentes perfilesde aws cli###
+aws configure --profile account1
+aws configure --profile account2
+
+###Para descargar de un bucket s3 a otro bucket s3##
+aws s3 cp --recursive s3://aws-dataengineering-day.workshop.aws/data/ s3://aws-labs-sistematica/Datos/tickets/ --profile sistematica

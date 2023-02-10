@@ -1,0 +1,60 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Sid": "DataLab_S3_669611188524",
+        "Effect": "Allow", 
+        "Action": [
+            "s3:GetObject",
+            "s3:PutObject"
+        ],
+        "Resource": "arn:aws:s3:::aws-labs-sistematica/Datos/*"
+      },
+      {
+        "Sid": "DataLab_Glue_669611188524",
+        "Effect": "Allow", 
+        "Action": [
+            "glue:CreateCrawler",
+            "glue:CreateDatabase",
+            "glue:CreateJob",
+            "glue:CreateSchema",
+            "glue:CreateScript",
+            "glue:GetCrawler",
+            "glue:GetCrawlerMetrics",
+            "glue:GetCrawlers",
+            "glue:GetDatabase",
+            "glue:GetDatabases",
+            "glue:GetJob",
+            "glue:GetJobRun",
+            "glue:GetJobRuns",
+            "glue:GetJobs",
+            "glue:GetSchema",
+            "glue:GetTable",
+            "glue:GetTables",
+            "glue:ListCrawlers",
+            "glue:ListJobs",
+            "glue:ListSchemas",
+            "glue:RunStatement",
+            "glue:SearchTables",
+            "glue:StartCrawler",
+            "glue:StartCrawlerSchedule",
+            "glue:StartJobRun",
+            "glue:StopCrawler",
+            "glue:StopCrawlerSchedule",
+            "glue:UpdateCrawler",
+            "glue:UpdateCrawlerSchedule",
+            "glue:UpdateDatabase",
+            "glue:UpdateJob",
+            "glue:UpdateTable",
+            "glue:UpdateSchema"
+        ],
+        "Resource": "arn:aws:glue:*:*:*"
+      },
+      {
+        "Sid": "DataLab_Athena_669611188524",
+        "Effect": "Allow", 
+        "Action":"athena:*",
+        "Resource": "arn:aws:s3:::aws-labs-sistematica/Datos/*"
+      }
+  ]
+}
